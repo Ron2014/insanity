@@ -60,6 +60,20 @@ function init(self, anchor, ...)
 	self:thickness(attr.thickness)
 
 	local left, top, right, bottom = RectFunc[anchor](self)
-	Sprite.init(self, Vector(left, top))
+	local body = Sprite.init(self, Vector(left, top))
+	local shape = love.physics.newRectangleShape(right-left, bottom-top)
+	local fixture = love.physics.newFixture(body, shape)
+	self:fixture(fixture)
+end
+
+function draw(self)
+	local color = self:color()
+	local red, green, blue, alpha = color:red(), color:green(), color:blue(), color:alpha()
+	love.graphics.setColor(red, green, blue, alpha)
+
+	local fixture = self:fixture()
+	local body = fixture:getBody()
+	local shape = fixture:getShape()
+	love.graphics.polygon("fill", body:getWorldPoints(shape:getPoints()))
 end
 

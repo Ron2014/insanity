@@ -18,4 +18,6 @@ function love.update(t)
 end
 
 function love.draw()
+	local scene = Scene()
+	scene:draw()
 end

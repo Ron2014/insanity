@@ -44,3 +44,9 @@ function initBorder(self)
 	end
 	self:border(border)
 end
+
+function draw(self)
+	for _, v in pairs(self:border()) do
+		v:draw()
+	end
+end

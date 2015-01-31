@@ -1,17 +1,16 @@
 module("Sprite", package.seeall)
 attr = {
-	body = true,
+	fixture = true,
 	color = Color(),
 }
 deriveClass(Sprite)
 
 function init(self, leftTopPos, color, ...)
+	self:color(color or attr.color)
+
 	local scene = Scene()
 	local world = scene:world()
-	local body = love.physics.newBody(world, leftTopPos:x(), leftTopPos:y())
-	self:body(body)
-
-	self:color(color or attr.color)
+	return love.physics.newBody(world, leftTopPos:x(), leftTopPos:y())
 end
 
 function draw(self)
