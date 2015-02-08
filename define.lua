@@ -10,6 +10,35 @@ Anchor = {
 	BottomRight = 8,
 }
 
+State = {
+	Ready = 0,
+	Run = 1,
+	Over = 2,
+}
+
+Collider = {
+	Category = {
+		Border = 0x0003,
+		Player = 0x0005,
+		Enemy = 0x0006,
+		Score = 0x0006,
+	},
+
+	Mask = {
+		Border = 0x0004,
+		Player = 0x0002,
+		Enemy = 0x0001,
+		Score = 0x0001,
+	},
+
+	Group = {
+		Border = 1,
+		Player = 2,
+		Enemy = -3,
+		Score = -4,
+	}
+}
+
 function sortpairs(t, inc)
 	local inc = inc
 	if inc==nil then inc = true end

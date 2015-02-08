@@ -2,7 +2,7 @@ function makeAttr(cls, attr)
 	for k, _ in pairs(attr) do
 		local func = function(self, val)
 			local inner = string.format("%s__", k)
-			if val then self[inner] = val end
+			if val~=nil then self[inner] = val end
 			return self[inner]
 		end
 		rawset(cls, k, func)
@@ -27,7 +27,9 @@ function deriveClass(child, parent)
 	end
 
 	child.check = function(cls, instance)
-		return type(instance)=="table" and getmetatable(instance)==cls.mt
+		if type(instance)=="table" then return getmetatable(instance)==cls.mt
+		elseif type(instance)=="string" then return cls.__NAME==instance end
+		return false
 	end
 
 	child.log = child.log or function(result, name, val, level)
@@ -62,12 +64,13 @@ function singletonClass(child, parent)
 	-- make inherit
 	deriveClass(child, parent)
 
-	child.getInstance = function(cls, ...)
+	child.getInstance = child.getInstance or function(cls, ...)
 		local instance = rawget(cls, "instance__")
 
 		if instance then
 			assert(cls:check(instance), string.format("instance type error: %s", type(instance)))
-			instance:init(...)
+			local args = {...}
+			if #args>0 then instance:init(...) end
 		else
 			instance = cls:new(...)
 			rawset(cls, "instance__", instance)

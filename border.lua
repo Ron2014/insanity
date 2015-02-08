@@ -1,68 +1,131 @@
 module("Border", package.seeall)
 attr = {
-	anchor = Anchor.Bottom,
-	thickness = 16,
+	width = true,
+	height = true,
 }
 deriveClass(Border, Sprite)
 
+-- static
+function getItemByFixture(fixture)
+	local scene = Scene()
+	for name, border in pairs(scene:border()) do
+		local node = border:fixture()
+		if node==fixture then return border end
+	end
+end
+
+-- collision
+-- Border == Boder
+-- Border <> Enemy
+-- Border <> Player
+
 RectFunc = {
-	[Anchor.Left] = function(self)
-		local thickness = self:thickness()
-		local scene = Scene()
-
-		local left = -thickness
+	[Anchor.TopLeft] = function(self)
+		local left = 0
 		local top = 0
-		local right = 0
-		local bottom = scene:screenHeight()
 
-		return left, top, right, bottom
+		local right = left + self:width()
+		local bottom = top + self:height()
+		return Vector((left + right) * 0.5, (top + bottom) * 0.5)
 	end,
 
-	[Anchor.Top] = function(self)
-		local thickness = self:thickness()
+	[Anchor.Top] = function(self, border)
+		if border==nil then border=true end
+
+		local scene = Scene()
+		local left = (scene:screenWidth() - self:width()) * 0.5
+		local top = (border and -self:height()) or 0
+
+		local right = left + self:width()
+		local bottom = top + self:height()
+		return Vector((left + right) * 0.5, (top + bottom) * 0.5)
+	end,
+
+	[Anchor.TopRight] = function(self)
+		local scene = Scene()
+
+		local left = scene:screenWidth() - self:width()
+		local top = 0
+
+		local right = left + self:width()
+		local bottom = top + self:height()
+		return Vector((left + right) * 0.5, (top + bottom) * 0.5)
+	end,
+
+	[Anchor.Left] = function(self, border)
+		if border==nil then border=true end
+
+		local scene = Scene()
+
+		local left = (border and -self:width()) or 0
+		local top = (scene:screenHeight() - self:height()) * 0.5
+
+		local right = left + self:width()
+		local bottom = top + self:height()
+		return Vector((left + right) * 0.5, (top + bottom) * 0.5)
+	end,
+
+	[Anchor.Right] = function(self, border)
+		if border==nil then border=true end
+
+		local scene = Scene()
+
+		local left = scene:screenWidth() + ((border and 0) or -self:width())
+		local top = (scene:screenHeight() - self:height()) * 0.5
+
+		local right = left + self:width()
+		local bottom = top + self:height()
+		return Vector((left + right) * 0.5, (top + bottom) * 0.5)
+	end,
+
+	[Anchor.BottomLeft] = function(self)
 		local scene = Scene()
 
 		local left = 0
-		local top = -thickness
-		local right = scene:screenWidth()
-		local bottom = 0
+		local top = scene:screenHeight() - self:height()
 
-		return left, top, right, bottom
+		local right = left + self:width()
+		local bottom = top + self:height()
+		return Vector((left + right) * 0.5, (top + bottom) * 0.5)
 	end,
 
-	[Anchor.Right] = function(self)
-		local thickness = self:thickness()
+	[Anchor.Bottom] = function(self, border)
+		if border==nil then border=true end
+
 		local scene = Scene()
 
-		local left = scene:screenWidth()
-		local top = 0
-		local right = scene:screenWidth() + thickness
-		local bottom = scene:screenHeight()
+		local left = (scene:screenWidth() - self:width()) * 0.5
+		local top = scene:screenHeight() + ((border and 0) or self:height())
 
-		return left, top, right, bottom
+		local right = left + self:width()
+		local bottom = top + self:height()
+		return Vector((left + right) * 0.5, (top + bottom) * 0.5)
 	end,
 
-	[Anchor.Bottom] = function(self)
-		local thickness = self:thickness()
+	[Anchor.BottomRight] = function(self)
 		local scene = Scene()
 
-		local left = 0
-		local top = scene:screenHeight()
-		local right = scene:screenWidth()
-		local bottom = scene:screenHeight() + thickness
+		local left = scene:screenWidth() - self:width()
+		local top = scene:screenHeight() - self:height()
 
-		return left, top, right, bottom
+		local right = left + self:width()
+		local bottom = top + self:height()
+		return Vector((left + right) * 0.5, (top + bottom) * 0.5)
 	end,
 }
 
-function init(self, anchor, ...)
-	self:anchor(anchor or attr.anchor)
-	self:thickness(attr.thickness)
+function init(self, anchor, width, height, ...)
+	self:width(width)
+	self:height(height)
 
-	local left, top, right, bottom = RectFunc[anchor](self)
-	local body = Sprite.init(self, Vector(left, top))
-	local shape = love.physics.newRectangleShape(right-left, bottom-top)
+	local pos = RectFunc[anchor](self)
+	local body = Sprite.init(self, pos, Color(255, 255, 255, 255), "static")
+	local shape = love.physics.newRectangleShape(width, height)
+
 	local fixture = love.physics.newFixture(body, shape)
+	fixture:setFilterData(Collider.Category.Border, Collider.Mask.Border, Collider.Group.Border)
+	fixture:setFriction(0)
+	fixture:setUserData(self._NAME)
 	self:fixture(fixture)
 end
 
